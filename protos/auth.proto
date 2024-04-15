@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package auth;
+
+message RegisterUserRequest {
+    string username = 1;
+    string password = 2;
+    string person_name = 3;
+    string person_age = 4;
+    string person_mail = 5;
+}
+
+message RegisterUserResponse {
+    bool success = 1;
+    string token = 2;
+}
+
+message RegisterPersonRequest {
+    string person_name = 1;
+    string person_age = 2;
+    string person_mail = 3;
+}
+
+message RegisterPersonResponse {
+    bool success = 1;
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string token = 2;
+}
+
+service YourService {
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {}
+    rpc RegisterPerson(RegisterPersonRequest) returns (RegisterPersonResponse) {}
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+}
