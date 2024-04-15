@@ -1,2 +1,1 @@
-# Auth_gRPC
-This repository contain the Authentication server
+Auth python gRPC
