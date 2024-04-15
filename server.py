@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 import jwt
 from datetime import datetime, timedelta
+import hashlib
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'protos')))
 
@@ -22,7 +23,7 @@ class User(Base):
     __tablename__ = 'User'
     idUser = Column(Integer, primary_key=True)
     UserName = Column(String(45), nullable=False, unique=True)
-    UserPassword = Column(String(255), nullable=False)
+    UserPassword = Column(String(64), nullable=False)  # Changed length to accommodate SHA256 hash
     Person_idperson = Column(Integer, ForeignKey('Person.idperson'), nullable=False)
     person = relationship("Person")
 
@@ -60,10 +61,13 @@ import auth_pb2_grpc
 
 class YourServiceServicer(auth_pb2_grpc.YourServiceServicer):
     def RegisterUser(self, request, context):
+        # Convertir la contraseña a SHA256
+        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+
         new_person = Person(PersonName=request.person_name, PersonAge=request.person_age, PersonMail=request.person_mail)
         session.add(new_person)
         session.commit()
-        new_user = User(UserName=request.username, UserPassword=request.password, person=new_person)
+        new_user = User(UserName=request.username, UserPassword=hashed_password, person=new_person)
         session.add(new_user)
         session.commit()
         token = generate_token(request.username, new_user.idUser, new_person.idperson, request.person_name, request.person_age, request.person_mail)
@@ -76,7 +80,10 @@ class YourServiceServicer(auth_pb2_grpc.YourServiceServicer):
         return auth_pb2.RegisterPersonResponse(success=True)
 
     def Login(self, request, context):
-        user = session.query(User).filter_by(UserName=request.username, UserPassword=request.password).first()
+        # Convertir la contraseña a SHA256
+        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+
+        user = session.query(User).filter_by(UserName=request.username, UserPassword=hashed_password).first()
         if user:
             token = generate_token(request.username, user.idUser, user.person.idperson, user.person.PersonName, user.person.PersonAge, user.person.PersonMail)
             return auth_pb2.LoginResponse(success=True, token=token)
