@@ -43,7 +43,7 @@ def login(stub):
         print("Login failed.")
 
 def run():
-    channel = grpc.insecure_channel('localhost:50051')
+    channel = grpc.insecure_channel('192.168.1.19:50051')
     stub = auth_pb2_grpc.YourServiceStub(channel)
     
     print("1. Register User")
