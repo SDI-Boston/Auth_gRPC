@@ -8,7 +8,12 @@ import jwt
 from datetime import datetime, timedelta
 import hashlib
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'protos')))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+sys.path.append(os.path.join(current_dir, 'protos'))
+
+import auth_pb2
+import auth_pb2_grpc
 
 Base = declarative_base()
 
@@ -23,7 +28,7 @@ class User(Base):
     __tablename__ = 'User'
     idUser = Column(Integer, primary_key=True)
     UserName = Column(String(45), nullable=False, unique=True)
-    UserPassword = Column(String(64), nullable=False)  # Changed length to accommodate SHA256 hash
+    UserPassword = Column(String(64), nullable=False)
     Person_idperson = Column(Integer, ForeignKey('Person.idperson'), nullable=False)
     person = relationship("Person")
 
@@ -56,43 +61,66 @@ def verify_token(token):
     except jwt.InvalidTokenError:
         return {'error': 'Invalid token'}
 
-import auth_pb2
-import auth_pb2_grpc
-
-class YourServiceServicer(auth_pb2_grpc.YourServiceServicer):
+class AuthenticationService(auth_pb2_grpc.AuthenticationServiceServicer):
+    def AuthenticateUser(self, request, context):
+        user = session.query(User).filter_by(UserName=request.username).first()
+        if not user:
+            return auth_pb2.AuthenticationResponse(success=False, error_message="User not found")
+        
+        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+        if user.UserPassword != hashed_password:
+            return auth_pb2.AuthenticationResponse(success=False, error_message="Incorrect password")
+        
+        token = generate_token(user.UserName, user.idUser, user.Person_idperson, user.person.PersonName, user.person.PersonAge, user.person.PersonMail)
+        return auth_pb2.AuthenticationResponse(success=True, token=token)
+    
     def RegisterUser(self, request, context):
-        # Convertir la contraseña a SHA256
-        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+        try:
+            if session.query(User).filter_by(UserName=request.username).first():
+                return auth_pb2.RegisterResponse(success=False, error_message="Username already exists")
 
-        new_person = Person(PersonName=request.person_name, PersonAge=request.person_age, PersonMail=request.person_mail)
-        session.add(new_person)
-        session.commit()
-        new_user = User(UserName=request.username, UserPassword=hashed_password, person=new_person)
-        session.add(new_user)
-        session.commit()
-        token = generate_token(request.username, new_user.idUser, new_person.idperson, request.person_name, request.person_age, request.person_mail)
-        return auth_pb2.RegisterUserResponse(success=True, token=token)
+            person = Person(PersonName=request.name, PersonAge=request.age, PersonMail=request.email)
+            session.add(person)
+            session.flush()
+            
+            hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+            user = User(UserName=request.username, UserPassword=hashed_password, Person_idperson=person.idperson)
+            session.add(user)
+            session.commit()
+            
+            return auth_pb2.RegisterResponse(success=True, mensagge="User registered successfully")
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
 
-    def RegisterPerson(self, request, context):
-        new_person = Person(PersonName=request.person_name, PersonAge=request.person_age, PersonMail=request.person_mail)
-        session.add(new_person)
-        session.commit()
-        return auth_pb2.RegisterPersonResponse(success=True)
 
-    def Login(self, request, context):
-        # Convertir la contraseña a SHA256
-        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+class RegisterService(auth_pb2_grpc.RegisterServiceServicer):
+    def RegisterUser(self, request, context):
+        try:
+            if session.query(User).filter_by(UserName=request.username).first():
+                return auth_pb2.RegisterResponse(success=False, error_message="Username already exists")
+            
+            person = Person(PersonName=request.name, PersonAge=request.age, PersonMail=request.email)
+            session.add(person)
+            session.flush() 
 
-        user = session.query(User).filter_by(UserName=request.username, UserPassword=hashed_password).first()
-        if user:
-            token = generate_token(request.username, user.idUser, user.person.idperson, user.person.PersonName, user.person.PersonAge, user.person.PersonMail)
-            return auth_pb2.LoginResponse(success=True, token=token)
-        else:
-            return auth_pb2.LoginResponse(success=False)
+            hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+            user = User(UserName=request.username, UserPassword=hashed_password, Person_idperson=person.idperson)
+            session.add(user)
+            session.commit()
+            
+            return auth_pb2.RegisterResponse(success=True, mensagge="User registered successfully")
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    auth_pb2_grpc.add_YourServiceServicer_to_server(YourServiceServicer(), server)
+    auth_pb2_grpc.add_AuthenticationServiceServicer_to_server(AuthenticationService(), server)
+    auth_pb2_grpc.add_RegisterServiceServicer_to_server(RegisterService(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     print("gRPC server running on port 50051")

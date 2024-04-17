@@ -14,25 +14,23 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nauth.proto\x12\x04\x61uth\"w\n\x13RegisterUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x13\n\x0bperson_name\x18\x03 \x01(\t\x12\x12\n\nperson_age\x18\x04 \x01(\t\x12\x13\n\x0bperson_mail\x18\x05 \x01(\t\"6\n\x14RegisterUserResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05token\x18\x02 \x01(\t\"U\n\x15RegisterPersonRequest\x12\x13\n\x0bperson_name\x18\x01 \x01(\t\x12\x12\n\nperson_age\x18\x02 \x01(\t\x12\x13\n\x0bperson_mail\x18\x03 \x01(\t\")\n\x16RegisterPersonResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"/\n\rLoginResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05token\x18\x02 \x01(\t2\xd9\x01\n\x0bYourService\x12G\n\x0cRegisterUser\x12\x19.auth.RegisterUserRequest\x1a\x1a.auth.RegisterUserResponse\"\x00\x12M\n\x0eRegisterPerson\x12\x1b.auth.RegisterPersonRequest\x1a\x1c.auth.RegisterPersonResponse\"\x00\x12\x32\n\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nauth.proto\"5\n\x0fUserCredentials\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"O\n\x16\x41uthenticationResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05token\x18\x02 \x01(\t\x12\x15\n\rerror_message\x18\x03 \x01(\t\"g\n\x17UserCredentialsRegister\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x0b\n\x03\x61ge\x18\x04 \x01(\t\x12\x10\n\x08password\x18\x05 \x01(\t\"L\n\x10RegisterResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08mensagge\x18\x02 \x01(\t\x12\x15\n\rerror_message\x18\x03 \x01(\t2V\n\x15\x41uthenticationService\x12=\n\x10\x41uthenticateUser\x12\x10.UserCredentials\x1a\x17.AuthenticationResponse2N\n\x0fRegisterService\x12;\n\x0cRegisterUser\x12\x18.UserCredentialsRegister\x1a\x11.RegisterResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'auth_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_REGISTERUSERREQUEST']._serialized_start=20
-  _globals['_REGISTERUSERREQUEST']._serialized_end=139
-  _globals['_REGISTERUSERRESPONSE']._serialized_start=141
-  _globals['_REGISTERUSERRESPONSE']._serialized_end=195
-  _globals['_REGISTERPERSONREQUEST']._serialized_start=197
-  _globals['_REGISTERPERSONREQUEST']._serialized_end=282
-  _globals['_REGISTERPERSONRESPONSE']._serialized_start=284
-  _globals['_REGISTERPERSONRESPONSE']._serialized_end=325
-  _globals['_LOGINREQUEST']._serialized_start=327
-  _globals['_LOGINREQUEST']._serialized_end=377
-  _globals['_LOGINRESPONSE']._serialized_start=379
-  _globals['_LOGINRESPONSE']._serialized_end=426
-  _globals['_YOURSERVICE']._serialized_start=429
-  _globals['_YOURSERVICE']._serialized_end=646
+  _globals['_USERCREDENTIALS']._serialized_start=14
+  _globals['_USERCREDENTIALS']._serialized_end=67
+  _globals['_AUTHENTICATIONRESPONSE']._serialized_start=69
+  _globals['_AUTHENTICATIONRESPONSE']._serialized_end=148
+  _globals['_USERCREDENTIALSREGISTER']._serialized_start=150
+  _globals['_USERCREDENTIALSREGISTER']._serialized_end=253
+  _globals['_REGISTERRESPONSE']._serialized_start=255
+  _globals['_REGISTERRESPONSE']._serialized_end=331
+  _globals['_AUTHENTICATIONSERVICE']._serialized_start=333
+  _globals['_AUTHENTICATIONSERVICE']._serialized_end=419
+  _globals['_REGISTERSERVICE']._serialized_start=421
+  _globals['_REGISTERSERVICE']._serialized_end=499
 # @@protoc_insertion_point(module_scope)

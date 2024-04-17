@@ -1,61 +1,67 @@
-import grpc
 import sys
 import os
+import grpc
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'protos')))
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-from protos import auth_pb2
-from protos import auth_pb2_grpc
+sys.path.append(os.path.join(current_dir, 'protos'))
 
-def register_user(stub):
-    print("Enter user details:")
-    username = input("Username: ")
-    password = input("Password: ")
-    person_name = input("Person Name: ")
-    person_age = input("Person Age: ")
-    person_mail = input("Person Mail: ")
-    
-    response = stub.RegisterUser(auth_pb2.RegisterUserRequest(
-        username=username,
-        password=password,
-        person_name=person_name,
-        person_age=person_age,
-        person_mail=person_mail
-    ))
-    if response.success:
-        print("User registered successfully.")
-    else:
-        print("Failed to register user.")
+import auth_pb2
+import auth_pb2_grpc
 
 def login(stub):
-    print("Enter login details:")
-    username = input("Username: ")
-    password = input("Password: ")
+    username = input("Enter username: ")
+    password = input("Enter password: ")
+    request = auth_pb2.UserCredentials(username=username, password=password)
     
-    response = stub.Login(auth_pb2.LoginRequest(
-        username=username,
-        password=password
-    ))
+    response = stub.AuthenticateUser(request)
+    
     if response.success:
-        print("Login successful.")
+        print("Authentication successful.")
         print("Token:", response.token)
     else:
-        print("Login failed.")
+        print("Authentication failed.")
+        print("Error:", response.error_message)
+
+def register(stub):
+    username = input("Enter username: ")
+    name = input("Enter your name: ")
+    email = input("Enter your email: ")
+    age = input("Enter your age: ")
+    password = input("Enter password: ")
+
+    request = auth_pb2.UserCredentialsRegister(
+        username=username,
+        name=name,
+        email=email,
+        age=age,
+        password=password
+    )
+
+    response = stub.RegisterUser(request)
+
+    if response.success:
+        print("Registration successful.")
+        print("Message:", response.mensagge)
+    else:
+        print("Registration failed.")
+        print("Error:", response.error_message) 
 
 def run():
-    channel = grpc.insecure_channel('192.168.1.19:50051')
-    stub = auth_pb2_grpc.YourServiceStub(channel)
-    
-    print("1. Register User")
-    print("2. Login")
-    choice = input("Enter your choice (1 or 2): ")
-    
-    if choice == '1':
-        register_user(stub)
-    elif choice == '2':
-        login(stub)
-    else:
-        print("Invalid choice. Please enter 1 or 2.")
+    with grpc.insecure_channel('localhost:50051') as channel:
+        auth_stub = auth_pb2_grpc.AuthenticationServiceStub(channel)
+        
+        register_stub = auth_pb2_grpc.RegisterServiceStub(channel)
+
+        choice = input("Choose an option:\n1. Login\n2. Register\n")
+        
+        if choice == '1':
+            login(auth_stub)
+        elif choice == '2':
+            register(register_stub) 
+        else:
+            print("Invalid choice. Please choose either 1 or 2.")
+
 
 if __name__ == '__main__':
     run()
