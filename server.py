@@ -32,7 +32,7 @@ class User(Base):
     Person_idperson = Column(Integer, ForeignKey('Person.idperson'), nullable=False)
     person = relationship("Person")
 
-engine = create_engine('mysql://root:1629@localhost/usergrpc')
+engine = create_engine('mysql://root:1629@db/usergrpc')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
