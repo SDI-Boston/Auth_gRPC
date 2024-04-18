@@ -48,7 +48,7 @@ def register(stub):
         print("Error:", response.error_message) 
 
 def run():
-    with grpc.insecure_channel('172.171.240.20:50051') as channel:
+    with grpc.insecure_channel('localhost:50051') as channel:
         auth_stub = auth_pb2_grpc.AuthenticationServiceStub(channel)
         
         register_stub = auth_pb2_grpc.RegisterServiceStub(channel)
