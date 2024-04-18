@@ -5,23 +5,9 @@ services:
     build: .
     ports:
       - "50051:50051"
-    depends_on:
-      - db
     environment:
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
-
-  db:
-    image: mysql:latest
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 1629
-      MYSQL_DATABASE: usergrpc
-      MYSQL_DATA_DIR: /var/lib/mysql 
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./ScriptgRPC.sql:/docker-entrypoint-initdb.d/ScriptgRPC.sql
 
 volumes:
   mysql-data:
