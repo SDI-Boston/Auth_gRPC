@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 import jwt
 import hashlib
 from datetime import datetime, timedelta
+from flask import Flask, jsonify
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, 'protos'))
@@ -41,7 +42,7 @@ class Logs(Base):
     ModifiedBy = Column(String(45))
     ModifiedTimestamp = Column(TIMESTAMP)
 
-engine = create_engine('mysql://root:Contraseña_123@localhost/UsergRPC')
+engine = create_engine('mysql://root:Contraseña_123@172.171.240.20/UsergRPC')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -130,13 +131,52 @@ class AuthenticationService(auth_pb2_grpc.AuthenticationServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
 
+class RegisterService(auth_pb2_grpc.RegisterServiceServicer):
+    def RegisterUser(self, request, context):
+        try:
+            if session.query(User).filter_by(UserName=request.username).first():
+                return auth_pb2.RegisterResponse(success=False, error_message="Username already exists")
+
+            person = Person(PersonName=request.name, PersonAge=request.age, PersonMail=request.email)
+            session.add(person)
+            session.flush() 
+
+            hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+            user = User(UserName=request.username, UserPassword=hashed_password, Person_idperson=person.idperson)
+            session.add(user)
+            session.commit()
+
+            return auth_pb2.RegisterResponse(success=True, mensagge="User registered successfully")
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
+
+app = Flask(__name__)
+
+# Configura la conexión a la base de datos
+db_engine = create_engine('mysql://root:Contraseña_123@172.171.240.20/UsergRPC')
+Session = sessionmaker(bind=db_engine)
+
+# Ruta para obtener todos los usuarios
+@app.route('/users', methods=['GET'])
+def get_users():
+    session = Session()
+    users = session.query(User).all()
+    session.close()
+    user_list = [{'id': user.idUser, 'username': user.UserName} for user in users]
+    return jsonify(user_list)
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     auth_pb2_grpc.add_AuthenticationServiceServicer_to_server(AuthenticationService(), server)
+    auth_pb2_grpc.add_RegisterServiceServicer_to_server(RegisterService(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     print("gRPC server running on port 50051")
-    server.wait_for_termination()
+
+    # No bloquea la ejecución del servidor gRPC
+    app.run(debug=True, use_reloader=False, port=5000)
 
 if __name__ == '__main__':
     serve()
