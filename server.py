@@ -42,7 +42,7 @@ class Logs(Base):
     ModifiedBy = Column(String(45))
     ModifiedTimestamp = Column(TIMESTAMP)
 
-engine = create_engine('mariadb://root:passwd*/@localhost/UsergRPC')
+engine = create_engine('mariadb://db:passwd*/@localhost/UsergRPC')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -155,7 +155,7 @@ class RegisterService(auth_pb2_grpc.RegisterServiceServicer):
 app = Flask(__name__)
 
 # Configura la conexión a la base de datos
-db_engine = create_engine('mariadb://root:passwd*/@localhost/UsergRPC')
+db_engine = create_engine('mariadb://db:passwd*/@localhost/UsergRPC')
 Session = sessionmaker(bind=db_engine)
 
 # Ruta para obtener todos los usuarios
