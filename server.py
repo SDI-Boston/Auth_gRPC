@@ -176,7 +176,7 @@ def serve():
     print("gRPC server running on port 50051")
 
     # No bloquea la ejecución del servidor gRPC
-    app.run(debug=True, use_reloader=False, port=5000)
+    app.run(debug=True, use_reloader=False, port=5001)
 
 if __name__ == '__main__':
     serve()
