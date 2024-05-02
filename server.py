@@ -8,6 +8,7 @@ import jwt
 import hashlib
 from datetime import datetime, timedelta
 from flask import Flask, jsonify
+from flask_cors import CORS
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, 'protos'))
@@ -153,6 +154,7 @@ class RegisterService(auth_pb2_grpc.RegisterServiceServicer):
             return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
 
 app = Flask(__name__)
+CORS(app)  # Habilita CORS para todos los endpoints de la aplicación
 
 # Configura la conexión a la base de datos
 db_engine = create_engine('mariadb://db:passwd*/@localhost/UsergRPC')
