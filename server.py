@@ -154,7 +154,7 @@ class RegisterService(auth_pb2_grpc.RegisterServiceServicer):
             return auth_pb2.RegisterResponse(success=False, error_message="Internal server error")
 
 app = Flask(__name__)
-CORS(app)  # Habilita CORS para todos los endpoints de la aplicación
+CORS(app, origins='*')  # Habilita CORS para todos los endpoints de la aplicación
 
 # Configura la conexión a la base de datos
 db_engine = create_engine('mariadb://db:passwd*/@localhost/UsergRPC')
@@ -178,7 +178,7 @@ def serve():
     print("gRPC server running on port 50051")
 
     # No bloquea la ejecución del servidor gRPC
-    app.run(debug=True, use_reloader=False, port=5001)
+    app.run(host='0.0.0.0', debug=True, use_reloader=False, port=5001)
 
 if __name__ == '__main__':
     serve()
